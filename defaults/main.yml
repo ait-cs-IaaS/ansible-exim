@@ -1,0 +1,4 @@
+exim_mailname: mailserver.example.com
+exim_ip: 127.0.0.1
+exim_domain: example.com
+exim_update_hosts: True
