@@ -39,6 +39,12 @@
           content: |
                   {{exim_mailname}}
 
+- name: create exim4.conf.template
+  template:
+          src: exim4.conf.template.j2
+          dest: /etc/exim4/exim4.conf.template
+          force: yes
+
 - name: create update-exim4.conf.conf
   template:
           src: update-exim4.conf.j2
