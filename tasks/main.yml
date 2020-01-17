@@ -40,8 +40,8 @@
                   {{exim_mailname}}
 
 - name: create exim4.conf.template
-  template:
-          src: exim4.conf.template.j2
+  copy:
+          src: exim4.conf.template
           dest: /etc/exim4/exim4.conf.template
           force: yes
 
