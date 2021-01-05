@@ -1,0 +1,8 @@
+exim_packages:
+  - exim4
+  - exim4-base
+  - "{{ 'exim4-daemon-heavy' if exim_daemon_heavy|bool else 'exim4-daemon-light' }}"
+
+# inverse of the to be installed daemone package
+# used for purging already installed daemon packages
+exim_daemon_purge: "{{ 'exim4-daemon-heavy' if not exim_daemon_heavy|bool else 'exim4-daemon-light' }}"

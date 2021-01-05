@@ -1,4 +1,17 @@
 exim_mailname: mailserver.example.com
 exim_ip: 127.0.0.1
 exim_domain: example.com
+exim_config_type: internet
+exim_localdelivery: mail_spool
+
 exim_update_hosts: True
+# if false light daemon is installed
+exim_daemon_heavy: True
+
+exim_hosts_entry: "{{ exim_ip }} {{ exim_mailname }} {{ exim_maildomain }}"
+
+# use this to ensure a specific exim version is installed
+# e.g., 4.89-2+deb9u3 for CVE-2019-10149
+# you might also need to configure debian snaptshot
+# or something similar for the package version to be available
+exim_package_version: ""

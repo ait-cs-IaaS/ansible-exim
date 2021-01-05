@@ -1,61 +1,61 @@
-
 - name: check exim4 version
   shell: "dpkg -l exim4 | grep '^ii' | awk '{print $3}'"
   register: eximversion
 
-- debug: var=eximversion
-
-- name: install nullmailer
-  apt:
-          name: nullmailer
-          state: present
-  when: eximversion["stdout"] != "4.89-2+deb9u3"
+- debug:
+    var: eximversion
 
 - name: purge exim-packages
+  become: yes
   apt:
-          name: "{{ packages }}"
-          purge: yes
-          state: absent
-  vars:
-          packages:
-                  - exim4
-                  - exim4-base 
-                  - exim4-config
-                  - exim4-daemon-light
-  when: eximversion["stdout"] != "4.89-2+deb9u3"
+    name: "{{ exim_packages }}"
+    purge: yes
+    state: absent
+
+  when:
+    # ensure purging is only done if a specific version is desired
+    - exim_package_version|length > 0
+    - eximversion["stdout"] != exim_package_version
+
+- name: purge undesired exim daemon package
+  become: yes
+  apt:
+    name: "{{ exim_daemon_purge }}"
+    purge: yes
+    state: absent
 
 - name: install vulnerable exim-packages
+  become: yes
   apt:
-          name: "{{ packages }}"
-          state: present
-  vars:
-          packages:
-                  - exim4
-                  - exim4-daemon-heavy
+    name: "{{ item }}{{ '='+exim_package_version if exim_package_version|length > 0 else ''}}"
+    state: present
+  loop: "{{ exim_packages }}"
 
 - name: configure mailname
+  become: yes
   copy:
-          dest: /etc/mailname
-          content: |
-                  {{exim_mailname}}
+    dest: /etc/mailname
+    content: |
+      {{ exim_mailname }}
 
 - name: create exim4.conf.template
+  become: yes
   copy:
-          src: exim4.conf.template
-          dest: /etc/exim4/exim4.conf.template
-          force: yes
+    src: exim4.conf.template
+    dest: /etc/exim4/exim4.conf.template
+    force: yes
 
 - name: create update-exim4.conf.conf
+  become: yes
   template:
-          src: update-exim4.conf.j2
-          dest: /etc/exim4/update-exim4.conf.conf
+    src: update-exim4.conf.j2
+    dest: /etc/exim4/update-exim4.conf.conf
   notify: update-exim4.conf
 
 - name: add mailname to hosts
+  become: yes
   lineinfile:
-          dest: /etc/hosts
-          regexp: '.*{{item}}$'
-          line: '{{item}}'
-  with_items:
-          - "{{exim_ip}} {{exim_mailname}} {{exim_maildomain}}"
-  when: exim_update_hosts == True
+    dest: /etc/hosts
+    regexp: ".*{{ exim_hosts_entry }}$"
+    line: "{{ exim_hosts_entry }}"
+  when: exim_update_hosts|bool
