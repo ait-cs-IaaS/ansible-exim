@@ -8,7 +8,7 @@
 - name: purge exim-packages
   become: yes
   apt:
-    name: "{{ exim_packages }}"
+    name: "{{ exim_packages + exim_packages_purge_extra }}"
     purge: yes
     state: absent
 
