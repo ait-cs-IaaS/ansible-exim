@@ -5,7 +5,11 @@ exim_config_type: internet
 exim_localdelivery: mail_spool
 # path of maildir if localdelivery is maildir
 #exim_maildir_path: $home/Maildir
-exim_local_interfaces: "127.0.0.1 ; ::1 ; {{ exim_ip }}"
+exim_local_interfaces:
+    - "127.0.0.1"
+    - "::1"
+    - "{{ exim_ip }}"
+
 exim_relay_domains: []
 exim_relay_nets: []
 
