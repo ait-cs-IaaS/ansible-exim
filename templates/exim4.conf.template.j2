@@ -353,7 +353,7 @@ MAIN_TLS_ADVERTISE_HOSTS = *
 tls_advertise_hosts = MAIN_TLS_ADVERTISE_HOSTS
 
 {% if exim_tls_ports|length > 0 %}
-tls_on_connect_ports = {{ exim_tls_ports | join(' ') }}
+tls_on_connect_ports = {{ exim_tls_ports | join(':') }}
 {% endif %}
 
 # Full paths to Certificate and Private Key. The Private Key file
