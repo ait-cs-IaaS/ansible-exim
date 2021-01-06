@@ -38,12 +38,29 @@
     content: |
       {{ exim_mailname }}
 
-- name: create exim4.conf.template
+- name: copy exim tls cert and key
   become: yes
   copy:
-    src: exim4.conf.template
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: "{{ exim_service_user }}"
+    mode: "0640"
+  loop:
+    - src: "{{ exim_tls_cert_src }}"
+      dest: "{{ exim_tls_cert }}"
+    - src: "{{ exim_tls_key_src }}"
+      dest: "{{ exim_tls_key}}"
+  when: 
+    - exim_tls_cert_src is defined
+    - exim_tls_key_src is defined
+
+- name: create exim4.conf.template
+  become: yes
+  template:
+    src: exim4.conf.template.j2
     dest: /etc/exim4/exim4.conf.template
-    force: yes
+  notify: update-exim4.conf
 
 - name: create update-exim4.conf.conf
   become: yes

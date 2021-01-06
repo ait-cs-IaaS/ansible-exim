@@ -3,6 +3,22 @@ exim_ip: 127.0.0.1
 exim_domain: example.com
 exim_config_type: internet
 exim_localdelivery: mail_spool
+# path of maildir if localdelivery is maildir
+#exim_maildir_path: $home/Maildir
+exim_local_interfaces: "127.0.0.1 ; ::1 ; {{ exim_ip }}"
+exim_relay_domains: []
+exim_relay_nets: []
+
+# tls options
+exim_tls_enable: False
+#exim_tls_cert: /etc/exim4/exim.crt
+#exim_tls_cert_src: exim.crt
+#exim_tls_key: /etc/exim4/exim.key
+#exim_tls_key_src: exim.key
+
+# note that you still have to configure exim to listen on the ports
+# e.g., via exim_local_interfaces
+exim_tls_ports: []
 
 exim_update_hosts: True
 # if false light daemon is installed

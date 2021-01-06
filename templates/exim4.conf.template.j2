@@ -340,6 +340,9 @@ add_environment = MAIN_ADD_ENVIRONMENT
 
 # TLS/SSL configuration for exim as an SMTP server.
 # See /usr/share/doc/exim4-base/README.Debian.gz for explanations.
+{% if exim_tls_enable|bool %}
+MAIN_TLS_ENABLE = yes
+{% endif %}
 
 .ifdef MAIN_TLS_ENABLE
 # Defines what hosts to 'advertise' STARTTLS functionality to. The
@@ -349,6 +352,9 @@ MAIN_TLS_ADVERTISE_HOSTS = *
 .endif
 tls_advertise_hosts = MAIN_TLS_ADVERTISE_HOSTS
 
+{% if exim_tls_ports|length > 0 %}
+tls_on_connect_ports = {{ exim_tls_ports | join(' ') }}
+{% endif %}
 
 # Full paths to Certificate and Private Key. The Private Key file
 # must be kept 'secret' and should be owned by root.Debian-exim mode
@@ -361,6 +367,12 @@ tls_advertise_hosts = MAIN_TLS_ADVERTISE_HOSTS
 # You can also configure exim to look for certificate and key in the
 # same file, set MAIN_TLS_CERTKEY to that file to enable. This takes
 # precedence over all other settings regarding certificate and key file.
+{% if exim_tls_cert is defined and exim_tls_key is defined %}
+# custom TLS cert and key paths
+MAIN_TLS_CERTIFICATE = {{ exim_tls_cert }}
+MAIN_TLS_PRIVATEKEY = {{ exim_tls_key }}
+{% endif %}
+
 .ifdef MAIN_TLS_CERTKEY
 tls_certificate = MAIN_TLS_CERTKEY
 .else
@@ -763,7 +775,7 @@ acl_check_rcpt:
                  {CONFDIR/local_host_blacklist}\
                  {}}
 
-
+{% raw %}
   # Warn if the sender host does not have valid reverse DNS.
   # 
   # If your system can do DNS lookups without delay or cost, you might want
@@ -778,7 +790,7 @@ acl_check_rcpt:
                       {yes}{no}}
     add_header = X-Host-Lookup-Failed: Reverse DNS lookup failed for $sender_host_address (${if eq{$host_lookup_failed}{1}{failed}{deferred}})
   .endif
-
+{% endraw %}
 
   # Use spfquery to perform a pair of SPF checks (for details, see
   # http://www.openspf.org/)
@@ -1371,13 +1383,13 @@ FIRST_USER_ACCOUNT_UID = 0
 .ifndef DEFAULT_SYSTEM_ACCOUNT_ALIAS
 DEFAULT_SYSTEM_ACCOUNT_ALIAS = :fail: no mail to system accounts
 .endif
-
+{% raw %}
 COND_SYSTEM_USER_AND_REMOTE_SUBMITTER = "\
                ${if and{{! match_ip{$sender_host_address}{:@[]}}\
                         {<{$local_user_uid}{FIRST_USER_ACCOUNT_UID}}}\
                     {1}{0}\
 		}"
-
+{% endraw %}
 lowuid_aliases:
   debug_print = "R: lowuid_aliases for $local_part@$domain (UID $local_user_uid)"
   check_local_user
@@ -1557,6 +1569,10 @@ mail_spool:
 # Use this instead of mail_spool if you want to to deliver to Maildir in
 # home-directory - change the definition of LOCAL_DELIVERY
 #
+{% if exim_maildir_path is defined and exim_maildir_path|length > 0 %}
+MAILDIR_HOME_MAILDIR_LOCATION = {{ exim_maildir_path }}
+{% endif %}
+
 maildir_home:
   debug_print = "T: maildir_home for $local_part@$domain"
   driver = appendfile
@@ -1919,7 +1935,7 @@ begin authenticators
 #   public_name = CRAM-MD5
 #   server_secret = ${lookup pgsql{SELECT pw FROM users WHERE username = '${quote_pgsql:$auth1}'}{$value}fail}
 #   server_set_id = $auth1
-
+{% raw %}
 # Authenticate against local passwords using sasl2-bin
 # Requires exim_uid to be a member of sasl group, see README.Debian.gz
 # plain_saslauthd_server:
@@ -1942,6 +1958,7 @@ begin authenticators
 #   .ifndef AUTH_SERVER_ALLOW_NOTLS_PASSWORDS
 #   server_advertise_condition = ${if eq{$tls_in_cipher}{}{}{*}}
 #   .endif
+{% endraw %}
 #
 # ntlm_sasl_server:
 #   driver = cyrus_sasl
