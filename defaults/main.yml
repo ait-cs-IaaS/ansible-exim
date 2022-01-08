@@ -35,3 +35,6 @@ exim_hosts_entry: "{{ exim_ip }} {{ exim_mailname }} {{ exim_maildomain }}"
 # you might also need to configure debian snaptshot
 # or something similar for the package version to be available
 exim_package_version: ""
+
+# ignore DNS lookups to non private IPs
+exim_ignore_rf1918: false
